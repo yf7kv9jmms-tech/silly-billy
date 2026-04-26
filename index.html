@@ -94,7 +94,7 @@
       border: 1px solid var(--matrix-green);
       padding: 10px;
       position: relative;
-      filter: sepia(100%) hue-rotate(90deg) brightness(80%); /* Makes the art green-tinted */
+      filter: sepia(100%) hue-rotate(90deg) brightness(80%);
     }
 
     .cover {
@@ -211,12 +211,14 @@
       z-index: 5;
       background: #000;
       visibility: hidden;
+      pointer-events: auto; /* FIXED: Ensure clicks pass through */
     }
 
     iframe {
       width: 100%;
       height: 100%;
       border: none;
+      pointer-events: auto; /* FIXED: Ensure iframe is clickable */
     }
 
     body.is-launching .launcher { opacity: 0; }
@@ -280,7 +282,7 @@
   </section>
 
   <div class="stage">
-    <iframe id="iframe" data-src="./26937/" allow="autoplay; fullscreen; picture-in-picture; cross-origin-isolated" scrolling="no"></iframe>
+    <iframe id="iframe" data-src="./26937/" allow="autoplay; fullscreen; picture-in-picture" scrolling="no"></iframe>
   </div>
 
   <script>
@@ -313,15 +315,17 @@
     }
     setInterval(drawMatrix, 35);
 
-    // 2. Core Logic (Preserved and Terminal-ized)
+    // 2. Core Logic (Fixed for Input)
     const playButton = document.querySelector("#play");
     const iframe = document.querySelector("#iframe");
     const decryptText = document.getElementById("decrypt-progress");
     let launched = false;
 
-    // Prevent scrolling keys
+    // Prevent scrolling keys on PARENT page only
     window.addEventListener("keydown", (e) => {
-      if ([32, 37, 38, 39, 40].includes(e.keyCode)) e.preventDefault();
+      if ([32, 37, 38, 39, 40].includes(e.keyCode) && !document.body.classList.contains("is-playing")) {
+        e.preventDefault();
+      }
     }, false);
 
     function launchGame() {
@@ -345,6 +349,15 @@
 
     iframe.addEventListener("load", () => {
       document.body.classList.add("is-playing");
+      // FIXED: Force iframe to capture keyboard and mouse input
+      iframe.focus();
+      try {
+        iframe.contentWindow.focus();
+      } catch(e) {
+        console.log("Cross-origin focus blocked");
+      }
+      // FIXED: Ensure pointer events work inside iframe
+      iframe.style.pointerEvents = "auto";
     });
 
     playButton.addEventListener("click", launchGame);
