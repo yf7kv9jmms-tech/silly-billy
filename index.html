@@ -15,9 +15,7 @@
       --font-mono: 'Fira Code', monospace;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -198,36 +196,11 @@
       text-shadow: 0 0 10px var(--matrix-green);
     }
 
-    /* FIXED: Use display:none instead of visibility */
-    .stage {
-      position: fixed;
-      inset: 0;
-      z-index: 5;
-      background: #000;
-      display: none;
-    }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
     body.is-launching .launcher { 
       opacity: 0; 
       pointer-events: none;
     }
     body.is-launching .loading { display: flex; }
-    body.is-playing .loading { display: none; }
-    body.is-playing .stage { display: block; }
-    body.is-playing .launcher { display: none; }
-
-    @media (max-width: 800px) {
-      .terminal-window {
-        grid-template-columns: 1fr;
-      }
-      .media-column { display: none; }
-    }
   </style>
 </head>
 <body class="is-booting">
@@ -277,10 +250,6 @@
     <div class="loading-text">DECRYPTING_SYSTEM_FILES...</div>
   </section>
 
-  <div class="stage" id="stage">
-    <iframe id="iframe" allow="autoplay; fullscreen; picture-in-picture" scrolling="no"></iframe>
-  </div>
-
   <script>
     // Matrix Rain Effect
     const canvas = document.getElementById('matrix-bg');
@@ -313,14 +282,11 @@
 
     // Core Logic
     const playButton = document.querySelector("#play");
-    const iframe = document.querySelector("#iframe");
-    const stage = document.querySelector("#stage");
     const decryptText = document.getElementById("decrypt-progress");
     let launched = false;
 
-    // Only block keys on launcher, not when playing
     window.addEventListener("keydown", (e) => {
-      if (!document.body.classList.contains("is-playing") && [32, 37, 38, 39, 40].includes(e.keyCode)) {
+      if (!launched && [32, 37, 38, 39, 40].includes(e.keyCode)) {
         e.preventDefault();
       }
     }, false);
@@ -338,38 +304,13 @@
         decryptText.innerText = progress + "%";
         if (progress === 100) {
           clearInterval(interval);
-          // FIXED: Set src directly, no data-src
-          iframe.src = "./26937/";
+          // FIXED: Redirect to game directly instead of iframe
+          window.location.href = "./26937/";
         }
       }, 150);
     }
 
-    // FIXED: Use load event on window instead of iframe for cross-origin
-    iframe.addEventListener("load", () => {
-      document.body.classList.remove("is-launching");
-      document.body.classList.add("is-playing");
-      
-      // FIXED: Try multiple focus methods with delay
-      setTimeout(() => {
-        iframe.focus();
-        // Click the iframe to force focus (user gesture helps)
-        const clickEvent = new MouseEvent('click', {
-          view: window,
-          bubbles: true,
-          cancelable: true
-        });
-        iframe.dispatchEvent(clickEvent);
-      }, 100);
-    });
-
     playButton.addEventListener("click", launchGame);
-
-    // FIXED: Also try focusing iframe when user clicks anywhere on stage
-    stage.addEventListener("click", () => {
-      if (document.body.classList.contains("is-playing")) {
-        iframe.focus();
-      }
-    });
 
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
