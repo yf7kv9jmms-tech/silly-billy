@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TERMINAL://SILLY_BILLY</title>
-  <meta name="description" content="Accessing encrypted Hit Single web build. System status: Online.">
   <link rel="icon" type="image/png" href="./favicon.png">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
@@ -18,7 +17,6 @@
 
     * {
       box-sizing: border-box;
-      cursor: crosshair;
     }
 
     html, body {
@@ -32,7 +30,6 @@
       font-family: var(--font-mono);
     }
 
-    /* Matrix Rain Canvas */
     #matrix-bg {
       position: fixed;
       top: 0;
@@ -41,7 +38,6 @@
       opacity: 0.2;
     }
 
-    /* CRT Scanline Overlay */
     body::after {
       content: " ";
       display: block;
@@ -61,15 +57,15 @@
       100% { opacity: 0.9; }
     }
 
-    /* Launcher UI */
     .launcher {
-      position: relative;
+      position: fixed;
+      inset: 0;
       z-index: 10;
       display: grid;
       place-items: center;
-      height: 100vh;
       padding: 20px;
       transition: opacity 0.5s ease;
+      background: var(--bg-black);
     }
 
     .terminal-window {
@@ -93,7 +89,6 @@
     .art-frame {
       border: 1px solid var(--matrix-green);
       padding: 10px;
-      position: relative;
       filter: sepia(100%) hue-rotate(90deg) brightness(80%);
     }
 
@@ -185,7 +180,6 @@
       cursor: wait;
     }
 
-    /* Loading Sequence */
     .loading {
       position: fixed;
       inset: 0;
@@ -204,27 +198,29 @@
       text-shadow: 0 0 10px var(--matrix-green);
     }
 
-    /* Stage */
+    /* FIXED: Use display:none instead of visibility */
     .stage {
       position: fixed;
       inset: 0;
       z-index: 5;
       background: #000;
-      visibility: hidden;
-      pointer-events: auto; /* FIXED: Ensure clicks pass through */
+      display: none;
     }
 
     iframe {
       width: 100%;
       height: 100%;
       border: none;
-      pointer-events: auto; /* FIXED: Ensure iframe is clickable */
     }
 
-    body.is-launching .launcher { opacity: 0; }
+    body.is-launching .launcher { 
+      opacity: 0; 
+      pointer-events: none;
+    }
     body.is-launching .loading { display: flex; }
     body.is-playing .loading { display: none; }
-    body.is-playing .stage { visibility: visible; }
+    body.is-playing .stage { display: block; }
+    body.is-playing .launcher { display: none; }
 
     @media (max-width: 800px) {
       .terminal-window {
@@ -281,12 +277,12 @@
     <div class="loading-text">DECRYPTING_SYSTEM_FILES...</div>
   </section>
 
-  <div class="stage">
-    <iframe id="iframe" data-src="./26937/" allow="autoplay; fullscreen; picture-in-picture" scrolling="no"></iframe>
+  <div class="stage" id="stage">
+    <iframe id="iframe" allow="autoplay; fullscreen; picture-in-picture" scrolling="no"></iframe>
   </div>
 
   <script>
-    // 1. Matrix Rain Effect
+    // Matrix Rain Effect
     const canvas = document.getElementById('matrix-bg');
     const ctx = canvas.getContext('2d');
 
@@ -315,15 +311,16 @@
     }
     setInterval(drawMatrix, 35);
 
-    // 2. Core Logic (Fixed for Input)
+    // Core Logic
     const playButton = document.querySelector("#play");
     const iframe = document.querySelector("#iframe");
+    const stage = document.querySelector("#stage");
     const decryptText = document.getElementById("decrypt-progress");
     let launched = false;
 
-    // Prevent scrolling keys on PARENT page only
+    // Only block keys on launcher, not when playing
     window.addEventListener("keydown", (e) => {
-      if ([32, 37, 38, 39, 40].includes(e.keyCode) && !document.body.classList.contains("is-playing")) {
+      if (!document.body.classList.contains("is-playing") && [32, 37, 38, 39, 40].includes(e.keyCode)) {
         e.preventDefault();
       }
     }, false);
@@ -334,7 +331,6 @@
       playButton.disabled = true;
       document.body.classList.add("is-launching");
 
-      // Decryption Fake Progress
       let progress = 0;
       const interval = setInterval(() => {
         progress += Math.floor(Math.random() * 15);
@@ -342,27 +338,39 @@
         decryptText.innerText = progress + "%";
         if (progress === 100) {
           clearInterval(interval);
-          iframe.src = iframe.dataset.src;
+          // FIXED: Set src directly, no data-src
+          iframe.src = "./26937/";
         }
       }, 150);
     }
 
+    // FIXED: Use load event on window instead of iframe for cross-origin
     iframe.addEventListener("load", () => {
+      document.body.classList.remove("is-launching");
       document.body.classList.add("is-playing");
-      // FIXED: Force iframe to capture keyboard and mouse input
-      iframe.focus();
-      try {
-        iframe.contentWindow.focus();
-      } catch(e) {
-        console.log("Cross-origin focus blocked");
-      }
-      // FIXED: Ensure pointer events work inside iframe
-      iframe.style.pointerEvents = "auto";
+      
+      // FIXED: Try multiple focus methods with delay
+      setTimeout(() => {
+        iframe.focus();
+        // Click the iframe to force focus (user gesture helps)
+        const clickEvent = new MouseEvent('click', {
+          view: window,
+          bubbles: true,
+          cancelable: true
+        });
+        iframe.dispatchEvent(clickEvent);
+      }, 100);
     });
 
     playButton.addEventListener("click", launchGame);
 
-    // Responsive Canvas
+    // FIXED: Also try focusing iframe when user clicks anywhere on stage
+    stage.addEventListener("click", () => {
+      if (document.body.classList.contains("is-playing")) {
+        iframe.focus();
+      }
+    });
+
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
