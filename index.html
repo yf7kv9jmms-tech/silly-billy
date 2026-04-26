@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FNF Mod</title>
+  <style>
+    html, body, iframe {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      overflow: hidden;
+      background: #211a30;
+    }
+
+    .game {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .d-none {
+      display: none !important;
+    }
+
+    .button {
+      cursor: pointer;
+      transition: transform .2s, opacity .2s ease, visibility .2s ease;
+      box-shadow: 0 4px 0 0 #bd2c05;
+      display: inline-block;
+      border-radius: 16px;
+      padding: 11px 19px;
+      margin: 0 auto;
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 16px;
+      text-align: center;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: #fff;
+      background-color: #ff592c;
+      border: 0;
+    }
+
+    .button:hover {
+      background-color: #ff8300;
+    }
+
+    .img {
+      max-width: min(420px, 85vw);
+      border-radius: 16px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <img class="preloader d-none" src="./game_preloader.svg" width="102" height="102" alt="Loading">
+    <img class="img" src="./uploads/game/icon/26937/fnf-hit-single-real.jpg" alt="FNF mod cover">
+    <button class="button" id="play" type="button">
+      Play
+      <span class="spinner d-none"></span>
+    </button>
+    <iframe
+      id="iframe"
+      class="d-none"
+      data-src="./26937/"
+      allow="autoplay; fullscreen; picture-in-picture; cross-origin-isolated"
+      scrolling="no"
+      width="100%"
+      height="100%"
+      title="FNF Mod"
+    ></iframe>
+  </div>
+
+  <script>
+    window.addEventListener("keydown", function (e) {
+      if ([32, 37, 38, 39, 40].includes(e.keyCode)) {
+        e.preventDefault();
+      }
+    }, false);
+
+    function loadGame() {
+      document.querySelector(".preloader").classList.add("d-none");
+      document.querySelector("#play").classList.add("d-none");
+      document.querySelector(".img").classList.add("d-none");
+      const iframe = document.querySelector("#iframe");
+      iframe.classList.remove("d-none");
+      iframe.src = iframe.dataset.src;
+    }
+
+    document.querySelector("#play").addEventListener("click", function () {
+      document.querySelector(".spinner").classList.remove("d-none");
+      document.querySelector(".preloader").classList.remove("d-none");
+      loadGame();
+    });
+  </script>
+</body>
+</html>
