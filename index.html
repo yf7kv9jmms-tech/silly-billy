@@ -3,34 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Silly Billy | Hit Single</title>
-  <meta name="description" content="Play the Silly Billy web build from Hit Single in a polished GitHub Pages launcher with a full-screen embedded game view.">
-  <meta name="theme-color" content="#120f1f">
-  <meta property="og:title" content="Silly Billy | Hit Single">
-  <meta property="og:description" content="A polished GitHub Pages launcher for the Silly Billy web build.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="./uploads/game/icon/26937/fnf-hit-single-real.jpg">
+  <title>TERMINAL://SILLY_BILLY</title>
   <link rel="icon" type="image/png" href="./favicon.png">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+
     :root {
-      --bg-0: #120f1f;
-      --bg-1: #1e1834;
-      --bg-2: #2a2149;
-      --panel: rgba(14, 10, 25, 0.76);
-      --panel-edge: rgba(255, 255, 255, 0.12);
-      --text: #f7f2ff;
-      --muted: #bdb3d7;
-      --hot: #ff7d4f;
-      --hot-2: #ffb04d;
-      --cyan: #77e8ff;
-      --shadow: rgba(0, 0, 0, 0.35);
-      --serif: "Georgia", "Palatino Linotype", serif;
-      --sans: "Trebuchet MS", "Gill Sans", sans-serif;
+      --matrix-green: #00ff41;
+      --dark-green: #003b00;
+      --bg-black: #050505;
+      --font-mono: 'Fira Code', monospace;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -38,568 +23,299 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background:
-        radial-gradient(circle at top left, rgba(119, 232, 255, 0.12), transparent 32%),
-        radial-gradient(circle at 80% 20%, rgba(255, 125, 79, 0.15), transparent 28%),
-        linear-gradient(135deg, var(--bg-0), var(--bg-1) 45%, var(--bg-2));
-      color: var(--text);
-      font-family: var(--sans);
+      background-color: var(--bg-black);
+      color: var(--matrix-green);
+      font-family: var(--font-mono);
     }
 
-    body::before,
-    body::after {
-      content: "";
+    #matrix-bg {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      opacity: 0.2;
+    }
+
+    body::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 100;
+      background-size: 100% 3px, 3px 100%;
       pointer-events: none;
+      animation: flicker 0.15s infinite;
     }
 
-    body::before {
-      background:
-        linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-      background-size: 38px 38px;
-      mask-image: radial-gradient(circle at center, black 52%, transparent 100%);
-      opacity: 0.35;
-      animation: gridDrift 18s linear infinite;
-    }
-
-    body::after {
-      background:
-        radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.12) 0 2px, transparent 2px),
-        radial-gradient(circle at 75% 30%, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px),
-        radial-gradient(circle at 55% 75%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px);
-      background-size: 220px 220px;
-      opacity: 0.4;
-      animation: dustDrift 20s linear infinite;
-    }
-
-    .launcher,
-    .loading,
-    .stage {
-      position: fixed;
-      inset: 0;
+    @keyframes flicker {
+      0% { opacity: 0.9; }
+      50% { opacity: 1; }
+      100% { opacity: 0.9; }
     }
 
     .launcher {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
       display: grid;
       place-items: center;
-      padding: 28px;
-      transition: opacity 0.55s ease, transform 0.55s ease, visibility 0.55s ease;
-      z-index: 3;
+      padding: 20px;
+      transition: opacity 0.5s ease;
+      background: var(--bg-black);
     }
 
-    .launcher-shell {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(280px, 460px) minmax(280px, 420px);
-      gap: 28px;
-      width: min(1120px, 100%);
-      align-items: center;
+    .terminal-window {
+      width: min(1000px, 100%);
+      background: rgba(0, 15, 0, 0.85);
+      border: 1px solid var(--matrix-green);
+      box-shadow: 0 0 20px var(--dark-green), inset 0 0 10px var(--dark-green);
       padding: 30px;
-      border: 1px solid var(--panel-edge);
-      border-radius: 28px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 28%),
-        var(--panel);
-      box-shadow:
-        0 32px 80px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(20px);
-      overflow: hidden;
-    }
-
-    .launcher-shell::before {
-      content: "";
-      position: absolute;
-      inset: -15% auto auto -10%;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(119, 232, 255, 0.32), transparent 70%);
-      filter: blur(12px);
-      animation: blobFloat 8s ease-in-out infinite;
-    }
-
-    .launcher-shell::after {
-      content: "";
-      position: absolute;
-      inset: auto -10% -18% auto;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 125, 79, 0.28), transparent 68%);
-      filter: blur(10px);
-      animation: blobFloat 10s ease-in-out infinite reverse;
-    }
-
-    .media-column,
-    .copy-column {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 30px;
       position: relative;
-      z-index: 1;
+    }
+
+    .media-column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
     .art-frame {
-      position: relative;
-      border-radius: 24px;
-      padding: 14px;
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04));
-      box-shadow:
-        0 24px 60px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.18);
-      transform: rotate(-2deg);
-      animation: coverFloat 5.2s ease-in-out infinite;
-    }
-
-    .art-frame::before {
-      content: "";
-      position: absolute;
-      inset: 10px;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      pointer-events: none;
+      border: 1px solid var(--matrix-green);
+      padding: 10px;
+      filter: sepia(100%) hue-rotate(90deg) brightness(80%);
     }
 
     .cover {
-      display: block;
       width: 100%;
-      border-radius: 18px;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      box-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+      display: block;
+      border: 1px solid var(--matrix-green);
     }
 
-    .status-ribbon {
-      position: absolute;
-      top: 18px;
-      left: -10px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--hot), var(--hot-2));
-      color: #220d00;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      box-shadow: 0 10px 22px rgba(255, 125, 79, 0.3);
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 18px;
-      padding: 8px 14px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 999px;
-      color: var(--cyan);
-      background: rgba(255, 255, 255, 0.03);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--cyan);
-      box-shadow: 0 0 18px var(--cyan);
+    .system-logs {
+      font-size: 0.75rem;
+      color: var(--dark-green);
+      overflow: hidden;
+      white-space: nowrap;
+      border-top: 1px dashed var(--matrix-green);
+      padding-top: 10px;
     }
 
     h1 {
       margin: 0;
-      font-family: var(--serif);
-      font-size: clamp(3.2rem, 8vw, 5.9rem);
-      line-height: 0.9;
-      letter-spacing: -0.05em;
-      text-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+      font-size: 3rem;
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      text-shadow: 0 0 10px var(--matrix-green);
     }
 
     .subtitle {
-      margin: 16px 0 0;
-      max-width: 30ch;
-      color: var(--muted);
-      font-size: clamp(1rem, 2vw, 1.16rem);
-      line-height: 1.7;
+      margin: 15px 0;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--matrix-green);
+      opacity: 0.8;
     }
 
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 24px 0 0;
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border: 1px solid var(--matrix-green);
+      font-size: 0.8rem;
+      margin-bottom: 20px;
+      background: var(--dark-green);
+      color: var(--matrix-green);
     }
 
-    .chip {
-      padding: 9px 13px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.88);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .summary {
+    .summary-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin: 28px 0 0;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 20px;
     }
 
     .summary-card {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      min-height: 112px;
+      border: 1px solid var(--dark-green);
+      padding: 12px;
+      background: rgba(0, 40, 0, 0.2);
     }
 
     .summary-card strong {
       display: block;
-      margin-bottom: 10px;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.12em;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      color: var(--cyan);
-    }
-
-    .summary-card span {
-      color: var(--muted);
-      font-size: 0.96rem;
-      line-height: 1.55;
-    }
-
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin: 30px 0 0;
+      margin-bottom: 5px;
+      color: var(--matrix-green);
     }
 
     .play-button {
-      appearance: none;
-      border: 0;
+      margin-top: 30px;
+      background: transparent;
+      border: 1px solid var(--matrix-green);
+      color: var(--matrix-green);
+      padding: 20px 40px;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      font-size: 1.2rem;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      min-width: 176px;
-      padding: 16px 24px;
-      border-radius: 18px;
-      color: #2f1200;
-      background: linear-gradient(135deg, var(--hot), var(--hot-2));
-      box-shadow:
-        0 18px 38px rgba(255, 125, 79, 0.28),
-        inset 0 -3px 0 rgba(90, 24, 0, 0.15);
-      font-size: 15px;
-      font-weight: 900;
-      letter-spacing: 0.12em;
       text-transform: uppercase;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      transition: all 0.2s ease;
+      width: 100%;
     }
 
-    .play-button:hover {
-      transform: translateY(-2px) scale(1.01);
-      box-shadow:
-        0 24px 48px rgba(255, 125, 79, 0.34),
-        inset 0 -3px 0 rgba(90, 24, 0, 0.15);
-      filter: saturate(1.08);
+    .play-button:hover:not(:disabled) {
+      background: var(--matrix-green);
+      color: var(--bg-black);
+      box-shadow: 0 0 20px var(--matrix-green);
     }
 
-    .play-button:active {
-      transform: translateY(1px) scale(0.995);
-    }
-
-    .play-button[disabled] {
+    .play-button:disabled {
+      opacity: 0.5;
       cursor: wait;
-      opacity: 0.9;
-    }
-
-    .button-note {
-      color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.55;
     }
 
     .loading {
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity 0.45s ease, visibility 0.45s ease;
-      z-index: 4;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: var(--bg-black);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: var(--matrix-green);
+    }
+
+    .loading-text {
+      font-size: 1.5rem;
+      margin-top: 20px;
+      text-shadow: 0 0 10px var(--matrix-green);
+    }
+
+    body.is-launching .launcher { 
+      opacity: 0; 
       pointer-events: none;
     }
-
-    .loading-panel {
-      display: grid;
-      justify-items: center;
-      gap: 16px;
-      padding: 26px 28px;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(10, 7, 18, 0.78);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(18px);
-    }
-
-    .loading img {
-      width: 102px;
-      height: 102px;
-      animation: pulse 1.35s ease-in-out infinite;
-    }
-
-    .loading-title {
-      font-family: var(--serif);
-      font-size: 1.55rem;
-      letter-spacing: -0.03em;
-    }
-
-    .loading-copy {
-      max-width: 26ch;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.55;
-    }
-
-    .spinner {
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(47, 18, 0, 0.24);
-      border-top-color: #2f1200;
-      border-radius: 50%;
-      animation: spin 0.95s linear infinite;
-    }
-
-    .stage {
-      z-index: 1;
-      background: #000;
-    }
-
-    .stage iframe {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      opacity: 0;
-      transition: opacity 0.45s ease;
-    }
-
-    body.is-launching .launcher {
-      opacity: 0;
-      visibility: hidden;
-      transform: scale(1.02);
-      pointer-events: none;
-    }
-
-    body.is-launching .loading {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    body.is-playing .loading {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    body.is-playing .stage iframe {
-      opacity: 1;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(0.96); opacity: 0.82; }
-      50% { transform: scale(1.04); opacity: 1; }
-    }
-
-    @keyframes coverFloat {
-      0%, 100% { transform: rotate(-2deg) translateY(0); }
-      50% { transform: rotate(-1deg) translateY(-8px); }
-    }
-
-    @keyframes blobFloat {
-      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-      50% { transform: translate3d(18px, -12px, 0) scale(1.08); }
-    }
-
-    @keyframes gridDrift {
-      to { transform: translate3d(0, 38px, 0); }
-    }
-
-    @keyframes dustDrift {
-      to { transform: translate3d(-40px, 28px, 0); }
-    }
-
-    @media (max-width: 920px) {
-      .launcher {
-        overflow: auto;
-      }
-
-      .launcher-shell {
-        grid-template-columns: 1fr;
-        padding: 22px;
-      }
-
-      .art-frame {
-        max-width: 420px;
-        margin: 0 auto;
-      }
-
-      .summary {
-        grid-template-columns: 1fr;
-      }
-
-      .actions {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .play-button {
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .launcher {
-        padding: 16px;
-      }
-
-      .launcher-shell {
-        gap: 20px;
-        padding: 18px;
-        border-radius: 22px;
-      }
-
-      .chip-row {
-        margin-top: 20px;
-      }
-
-      .status-ribbon {
-        left: 12px;
-        top: 12px;
-      }
-    }
+    body.is-launching .loading { display: flex; }
   </style>
 </head>
-<body>
-  <section class="launcher" aria-label="Game launcher">
-    <div class="launcher-shell">
+<body class="is-booting">
+
+  <canvas id="matrix-bg"></canvas>
+
+  <section class="launcher">
+    <div class="terminal-window">
       <div class="media-column">
         <div class="art-frame">
-          <div class="status-ribbon">Web Build</div>
           <img class="cover" src="./uploads/game/icon/26937/fnf-hit-single-real.jpg" alt="Silly Billy cover art">
+        </div>
+        <div class="system-logs" id="logs">
+          > [SYS] NODE_26937_READY...<br>
+          > [SYS] ASSET_LOAD_COMPLETE...<br>
+          > [SYS] ENCRYPTION_ACTIVE...
         </div>
       </div>
 
       <div class="copy-column">
-        <div class="eyebrow">GitHub Pages Edition</div>
-        <h1>Silly Billy</h1>
+        <div class="status-badge">SECURE_HANDSHAKE_ESTABLISHED</div>
+        <h1>SILLY_BILLY.EXE</h1>
         <p class="subtitle">
-          A cleaner front door for the Hit Single web build, tuned for full-screen play and a smoother launch into the game.
+          ACCESSING THE PSYCH_ENGINE CORE THROUGH A SECURE GITHUB_PAGES TUNNEL. RE-ROUTING FULLSCREEN PROTOCOLS.
         </p>
 
-        <div class="chip-row" aria-label="Highlights">
-          <span class="chip">Full-Screen Embed</span>
-          <span class="chip">Stable Web Build</span>
-          <span class="chip">GitHub Hosted</span>
-        </div>
-
-        <div class="summary" aria-label="Game summary">
-          <div class="summary-card">
-            <strong>Feel</strong>
-            <span>Fast boot, dramatic cover art, and a focused launch flow without extra clutter.</span>
-          </div>
+        <div class="summary-grid">
           <div class="summary-card">
             <strong>Platform</strong>
-            <span>Built to run cleanly from GitHub Pages while preserving the working game bundle.</span>
+            <span>GITHUB_PAGES_V1.0.4</span>
           </div>
           <div class="summary-card">
-            <strong>Controls</strong>
-            <span>Keyboard-first play with the usual rhythm-game arrows, space, and fullscreen support.</span>
+            <strong>Control</strong>
+            <span>INPUT_KEYBOARD_ARROW</span>
           </div>
         </div>
 
-        <div class="actions">
-          <button class="play-button" id="play" type="button">
-            Launch Game
-            <span class="spinner d-none" aria-hidden="true"></span>
-          </button>
-          <div class="button-note">
-            Loads the embedded game at <code>/26937/</code> and fades straight into play.
-          </div>
-        </div>
+        <button class="play-button" id="play">
+          Execute Program
+        </button>
       </div>
     </div>
   </section>
 
-  <section class="loading" aria-live="polite" aria-label="Loading game">
-    <div class="loading-panel">
-      <img src="./game_preloader.svg" width="102" height="102" alt="Loading">
-      <div class="loading-title">Booting Psych Engine</div>
-      <div class="loading-copy">
-        Warming up the web build and handing control over to the game.
-      </div>
-    </div>
+  <section class="loading">
+    <div id="decrypt-progress" style="font-size: 4rem;">0%</div>
+    <div class="loading-text">DECRYPTING_SYSTEM_FILES...</div>
   </section>
-
-  <div class="stage">
-    <iframe
-      id="iframe"
-      data-src="./26937/"
-      allow="autoplay; fullscreen; picture-in-picture; cross-origin-isolated"
-      scrolling="no"
-      title="Silly Billy"
-    ></iframe>
-  </div>
 
   <script>
-    window.addEventListener("keydown", function (e) {
-      if ([32, 37, 38, 39, 40].includes(e.keyCode)) {
+    // Matrix Rain Effect
+    const canvas = document.getElementById('matrix-bg');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const rainDrops = Array.from({ length: columns }).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0F0';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < rainDrops.length; i++) {
+        const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+        ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+        if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          rainDrops[i] = 0;
+        }
+        rainDrops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 35);
+
+    // Core Logic
+    const playButton = document.querySelector("#play");
+    const decryptText = document.getElementById("decrypt-progress");
+    let launched = false;
+
+    window.addEventListener("keydown", (e) => {
+      if (!launched && [32, 37, 38, 39, 40].includes(e.keyCode)) {
         e.preventDefault();
       }
     }, false);
 
-    const playButton = document.querySelector("#play");
-    const spinner = playButton.querySelector(".spinner");
-    const iframe = document.querySelector("#iframe");
-    let launched = false;
-
     function launchGame() {
-      if (launched) {
-        return;
-      }
-
+      if (launched) return;
       launched = true;
       playButton.disabled = true;
-      spinner.classList.remove("d-none");
       document.body.classList.add("is-launching");
 
-      requestAnimationFrame(function () {
-        setTimeout(function () {
-          iframe.src = iframe.dataset.src;
-        }, 220);
-      });
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.floor(Math.random() * 15);
+        if (progress > 100) progress = 100;
+        decryptText.innerText = progress + "%";
+        if (progress === 100) {
+          clearInterval(interval);
+          // FIXED: Redirect to game directly instead of iframe
+          window.location.href = "./26937/";
+        }
+      }, 150);
     }
 
-    iframe.addEventListener("load", function () {
-      document.body.classList.add("is-playing");
-      spinner.classList.add("d-none");
-    });
-
     playButton.addEventListener("click", launchGame);
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
   </script>
 </body>
 </html>
